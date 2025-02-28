@@ -1,10 +1,10 @@
 ﻿using ECommerceTask.Application.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ECommerceTask.Infrastructure.Services
+namespace ECommerceTask.Application.Services
 {
+
     public class PasswordHasher : IPasswordHasher
     {
         public void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
@@ -26,4 +26,3 @@ namespace ECommerceTask.Infrastructure.Services
         }
     }
 }
-
