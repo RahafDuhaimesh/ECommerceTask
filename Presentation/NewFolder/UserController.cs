@@ -23,6 +23,13 @@ namespace ECommerceTask.Presentation.Controllers
             return Ok(new { message = result });
         }
 
+        [HttpPost("registerAdmin")]
+        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminReqDTO model, [FromHeader] string token)
+        {
+            var result = await _userService.RegisterAdminAsync(model, token);
+            return Ok(new { message = result });
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginReqDTO model)
         {
@@ -31,6 +38,20 @@ namespace ECommerceTask.Presentation.Controllers
                 return Unauthorized(new { message = result?.Message ?? "Invalid credentials" });
 
             return Ok(result);
+        }
+
+        [HttpPut("updateAdmin/{adminId}")]
+        public async Task<IActionResult> UpdateAdmin(int adminId, [FromBody] RegisterAdminReqDTO model, [FromHeader] string token)
+        {
+            var result = await _userService.UpdateAdminAsync(adminId, model, token);
+            return Ok(new { message = result });
+        }
+
+        [HttpDelete("deleteAdmin/{adminId}")]
+        public async Task<IActionResult> DeleteAdmin(int adminId, [FromHeader] string token)
+        {
+            var result = await _userService.DeleteAdminAsync(adminId, token);
+            return Ok(new { message = result });
         }
     }
 }

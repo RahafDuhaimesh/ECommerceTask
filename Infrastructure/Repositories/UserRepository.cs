@@ -24,6 +24,11 @@ namespace ECommerceTask.Infrastructure.Repositories
             return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
         }
 
+        public async Task<User> GetUserByIdAsync(int id) // Implement GetUserById
+        {
+            return await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<bool> UserExistsAsync(string username)
         {
             return await _context.Users.AnyAsync(x => x.Username == username);
@@ -33,6 +38,22 @@ namespace ECommerceTask.Infrastructure.Repositories
         {
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateUserAsync(User user) // Implement UpdateUserAsync
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteUserAsync(int userId) // Implement DeleteUserAsync
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

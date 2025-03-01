@@ -6,11 +6,13 @@ using System.Text;
 using ECommerceTask.Application.Services;
 using ECommerceTask.Application.Interfaces;
 using ECommerceTask.Infrastructure.Repositories;
+using ECommerceTask.Helpers;
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -19,7 +21,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
-
+builder.Services.AddScoped<IJwtTokenHelper, JwtTokenHelper>();
 builder.Services.AddSingleton<TokenGenerator>();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");

@@ -1,7 +1,13 @@
 ﻿using ECommerceTask.Application.DTOs;
 using ECommerceTask.Application.Interfaces;
 using ECommerceTask.Domain.Entities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace ECommerceTask.Application.Services
@@ -11,12 +17,20 @@ namespace ECommerceTask.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenGenerator _tokenGenerator;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IJwtTokenHelper _jwtTokenHelper;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator)
+        public UserService(IUserRepository userRepository,
+                           IPasswordHasher passwordHasher,
+                           ITokenGenerator tokenGenerator,
+                           IHttpContextAccessor httpContextAccessor,
+                           IJwtTokenHelper jwtTokenHelper)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenGenerator = tokenGenerator;
+            _httpContextAccessor = httpContextAccessor;
+            _jwtTokenHelper = jwtTokenHelper;
         }
 
         public async Task<string> RegisterUserAsync(RegisterReqDTO model)
@@ -28,12 +42,12 @@ namespace ECommerceTask.Application.Services
 
             var newUser = new User
             {
-                FullName = model.FullName, 
+                FullName = model.FullName,
                 Username = model.Username,
                 Email = model.Email,
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
-                Role = "User" 
+                Role = "User"
             };
 
             await _userRepository.AddUserAsync(newUser);
@@ -48,7 +62,7 @@ namespace ECommerceTask.Application.Services
             {
                 return new LoginResDTO
                 {
-                    Token = string.Empty, 
+                    Token = string.Empty,
                     Message = "Invalid username or password."
                 };
             }
@@ -58,5 +72,65 @@ namespace ECommerceTask.Application.Services
             return new LoginResDTO { Token = token, Message = "Login successful" };
         }
 
+        public async Task<string> RegisterAdminAsync(RegisterAdminReqDTO model, string token)
+        {
+            if (!_jwtTokenHelper.ValidateTokenAndRole(token, "Admin"))
+                return "You do not have permission to register a new admin.";
+
+            if (await _userRepository.UserExistsAsync(model.Username))
+                return "User already exists.";
+
+            _passwordHasher.CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+            var newUser = new User
+            {
+                FullName = model.FullName,
+                Username = model.Username,
+                Email = model.Email,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt,
+                Role = "Admin"
+            };
+
+            await _userRepository.AddUserAsync(newUser);
+            return "Admin registered successfully.";
+        }
+
+        public async Task<string> UpdateAdminAsync(int adminId, RegisterAdminReqDTO model, string token)
+        {
+            if (!_jwtTokenHelper.ValidateTokenAndRole(token, "Admin"))
+                return "You do not have permission to update an admin.";
+
+            var admin = await _userRepository.GetUserByIdAsync(adminId);
+            if (admin == null)
+                return "Admin not found.";
+
+            admin.FullName = model.FullName;
+            admin.Username = model.Username;
+            admin.Email = model.Email;
+
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                _passwordHasher.CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                admin.PasswordHash = passwordHash;
+                admin.PasswordSalt = passwordSalt;
+            }
+
+            await _userRepository.UpdateUserAsync(admin);
+            return "Admin updated successfully.";
+        }
+
+        public async Task<string> DeleteAdminAsync(int adminId, string token)
+        {
+            if (!_jwtTokenHelper.ValidateTokenAndRole(token, "Admin"))
+                return "You do not have permission to delete an admin.";
+
+            var admin = await _userRepository.GetUserByIdAsync(adminId);
+            if (admin == null)
+                return "Admin not found.";
+
+            await _userRepository.DeleteUserAsync(adminId);
+            return "Admin deleted successfully.";
+        }
     }
 }
