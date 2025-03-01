@@ -1,11 +1,12 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using ECommerceTask.Application.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace ECommerceTask.Application.Services
 {
-    public class TokenGenerator
+    public class TokenGenerator : ITokenGenerator  
     {
         private readonly IConfiguration _configuration;
 
@@ -18,10 +19,11 @@ namespace ECommerceTask.Application.Services
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             var key = jwtSettings.GetValue<string>("Key");
+
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, username)
-        };
+            {
+                new Claim(ClaimTypes.Name, username)
+            };
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 

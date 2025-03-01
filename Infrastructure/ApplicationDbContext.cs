@@ -1,5 +1,4 @@
 ﻿using ECommerceTask.Domain.Entities;
-using ECommerceTask.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceTask.Infrastructure

@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
+using ECommerceTask.Application.Services;
+using ECommerceTask.Application.Interfaces;
+using ECommerceTask.Infrastructure.Repositories;
 var builder = WebApplication.CreateBuilder(args);
+
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -12,6 +15,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 
 builder.Services.AddSingleton<TokenGenerator>();
 
@@ -23,6 +30,17 @@ var audience = jwtSettings.GetValue<string>("Audience");
 if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
 {
     throw new InvalidOperationException("JWT settings are not properly configured.");
+}
+Console.WriteLine("Checking JWT Configuration...");
+Console.WriteLine($"JWT Key: {builder.Configuration["Jwt:Key"]}");
+Console.WriteLine($"JWT Issuer: {builder.Configuration["Jwt:Issuer"]}");
+Console.WriteLine($"JWT Audience: {builder.Configuration["Jwt:Audience"]}");
+
+if (string.IsNullOrEmpty(builder.Configuration["Jwt:Key"]) ||
+    string.IsNullOrEmpty(builder.Configuration["Jwt:Issuer"]) ||
+    string.IsNullOrEmpty(builder.Configuration["Jwt:Audience"]))
+{
+    throw new InvalidOperationException("JWT settings are missing in configuration.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
