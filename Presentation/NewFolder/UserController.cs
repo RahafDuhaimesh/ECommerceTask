@@ -24,9 +24,9 @@ namespace ECommerceTask.Presentation.Controllers
         }
 
         [HttpPost("registerAdmin")]
-        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminReqDTO model, [FromHeader] string token)
+        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminReqDTO model)
         {
-            var result = await _userService.RegisterAdminAsync(model, token);
+            var result = await _userService.RegisterAdminAsync(model);
             return Ok(new { message = result });
         }
 

@@ -2,12 +2,7 @@
 using ECommerceTask.Application.Interfaces;
 using ECommerceTask.Domain.Entities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECommerceTask.Application.Services
@@ -72,14 +67,8 @@ namespace ECommerceTask.Application.Services
             return new LoginResDTO { Token = token, Message = "Login successful" };
         }
 
-        public async Task<string> RegisterAdminAsync(RegisterAdminReqDTO model, string token)
+        public async Task<string> RegisterAdminAsync(RegisterAdminReqDTO model)
         {
-            if (!_jwtTokenHelper.ValidateTokenAndRole(token, "Admin"))
-                return "You do not have permission to register a new admin.";
-
-            if (await _userRepository.UserExistsAsync(model.Username))
-                return "User already exists.";
-
             _passwordHasher.CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             var newUser = new User
@@ -98,7 +87,9 @@ namespace ECommerceTask.Application.Services
 
         public async Task<string> UpdateAdminAsync(int adminId, RegisterAdminReqDTO model, string token)
         {
-            if (!_jwtTokenHelper.ValidateTokenAndRole(token, "Admin"))
+            var isValidRole = await _jwtTokenHelper.ValidateTokenAndRole(token, "Admin");
+
+            if (!isValidRole)
                 return "You do not have permission to update an admin.";
 
             var admin = await _userRepository.GetUserByIdAsync(adminId);
@@ -122,7 +113,9 @@ namespace ECommerceTask.Application.Services
 
         public async Task<string> DeleteAdminAsync(int adminId, string token)
         {
-            if (!_jwtTokenHelper.ValidateTokenAndRole(token, "Admin"))
+            var isValidRole = await _jwtTokenHelper.ValidateTokenAndRole(token, "Admin");
+
+            if (!isValidRole)
                 return "You do not have permission to delete an admin.";
 
             var admin = await _userRepository.GetUserByIdAsync(adminId);
