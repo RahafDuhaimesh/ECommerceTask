@@ -16,7 +16,6 @@ namespace ECommerceTask.Presentation.Controllers
             _productService = productService;
         }
 
-        // Admin can create a product
         [HttpPost("create")]
         public async Task<IActionResult> CreateProduct([FromBody] ProductReqDTO productDTO, [FromHeader] string token)
         {
@@ -27,7 +26,6 @@ namespace ECommerceTask.Presentation.Controllers
             return CreatedAtAction(nameof(GetProduct), new { id = result.Id }, result);
         }
 
-        // Non-admin users can list products
         [HttpGet("list")]
         public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
@@ -35,7 +33,6 @@ namespace ECommerceTask.Presentation.Controllers
             return Ok(products);
         }
 
-        // Get product by id
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProduct(int id)
         {
@@ -46,7 +43,6 @@ namespace ECommerceTask.Presentation.Controllers
             return Ok(product);
         }
 
-        // Admin can update product
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductReqDTO productDTO, [FromHeader] string token)
         {
@@ -57,7 +53,6 @@ namespace ECommerceTask.Presentation.Controllers
             return Ok(result);
         }
 
-        // Admin can delete product
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteProduct(int id, [FromHeader] string token)
         {

@@ -14,15 +14,12 @@ namespace ECommerceTask.Infrastructure.Repositories
             _context = context;
         }
 
-        // Create a new invoice
-        public async Task<Invoice> CreateInvoiceAsync(Invoice invoice)
+        public async Task CreateInvoiceAsync(Invoice invoice)
         {
-            await _context.Invoices.AddAsync(invoice);
+            _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync();
-            return invoice;
         }
 
-        // Get invoice by ID
         public async Task<Invoice> GetInvoiceByIdAsync(int id)
         {
             return await _context.Invoices
@@ -31,7 +28,6 @@ namespace ECommerceTask.Infrastructure.Repositories
                                  .FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        // Get all invoices for a user by their user ID
         public async Task<IEnumerable<Invoice>> GetInvoicesByUserIdAsync(int userId)
         {
             return await _context.Invoices

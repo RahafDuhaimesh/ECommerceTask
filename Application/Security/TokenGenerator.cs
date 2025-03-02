@@ -15,15 +15,16 @@ namespace ECommerceTask.Application.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(string username, IList<string> roles)
+        public string GenerateToken(int userId, string username, IList<string> roles)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             var key = jwtSettings.GetValue<string>("Key");
 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, username)
-            };
+    {
+        new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+        new Claim(ClaimTypes.Name, username)
+    };
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
@@ -40,5 +41,6 @@ namespace ECommerceTask.Application.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }

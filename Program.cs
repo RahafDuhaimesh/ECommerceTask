@@ -27,6 +27,10 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<IJwtTokenHelper, JwtTokenHelper>();
 builder.Services.AddSingleton<TokenGenerator>();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = jwtSettings.GetValue<string>("Key");

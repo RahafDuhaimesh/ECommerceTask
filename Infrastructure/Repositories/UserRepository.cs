@@ -24,7 +24,7 @@ namespace ECommerceTask.Infrastructure.Repositories
             return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
         }
 
-        public async Task<User> GetUserByIdAsync(int id) // Implement GetUserById
+        public async Task<User> GetUserByIdAsync(int id) 
         {
             return await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
         }
@@ -40,13 +40,13 @@ namespace ECommerceTask.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateUserAsync(User user) // Implement UpdateUserAsync
+        public async Task UpdateUserAsync(User user) 
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteUserAsync(int userId) // Implement DeleteUserAsync
+        public async Task DeleteUserAsync(int userId) 
         {
             var user = await _context.Users.FindAsync(userId);
             if (user != null)

@@ -62,7 +62,7 @@ namespace ECommerceTask.Application.Services
                 };
             }
 
-            var token = _tokenGenerator.GenerateToken(user.Username, new List<string> { user.Role });
+            var token = _tokenGenerator.GenerateToken(user.Id, user.Username, new List<string> { user.Role });
 
             return new LoginResDTO { Token = token, Message = "Login successful" };
         }

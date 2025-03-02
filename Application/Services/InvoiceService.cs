@@ -23,24 +23,23 @@ namespace ECommerceTask.Application.Services
             _jwtTokenHelper = jwtTokenHelper;
         }
 
-        public async Task<Invoice> AddInvoiceAsync(List<InvoiceDetailDTO> invoiceDetailsDTO, string token)
+        public async Task<InvoiceResDTO> AddInvoiceAsync(List<InvoiceDetailDTO> invoiceDetailsDTO)
         {
-            // استخراج UserId من التوكن باستخدام JwtTokenHelper
-            var userIdString = await _jwtTokenHelper.GetUserIdFromTokenAsync(token);  // تمرير التوكن هنا لاستخراج الـ UserId
+            if (invoiceDetailsDTO == null || invoiceDetailsDTO.Count == 0)
+                throw new ArgumentException("Invoice details cannot be empty.");
 
-            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-                throw new Exception("User not found or token is invalid.");
+            int userId = invoiceDetailsDTO.First().UserId;
 
-            // منطق إضافة الفاتورة
-            var user = await _userRepository.GetUserByIdAsync(userId);  // استخدام UserId من نوع int
+            var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
-                throw new Exception("User not found.");
+                throw new KeyNotFoundException("User not found.");
 
             var invoice = new Invoice
             {
-                UserId = user.Id,  // استخدام الـ UserId
+                UserId = user.Id,
                 Date = DateTime.UtcNow,
-                TotalAmount = 0
+                TotalAmount = 0,
+                InvoiceDetails = new List<InvoiceDetail>()
             };
 
             decimal totalAmount = 0;
@@ -49,10 +48,10 @@ namespace ECommerceTask.Application.Services
             {
                 var product = await _productRepository.GetProductByIdAsync(detail.ProductId);
                 if (product == null || product.IsDeleted)
-                    throw new Exception($"Product with ID {detail.ProductId} not found or is deleted.");
+                    throw new KeyNotFoundException($"Product with ID {detail.ProductId} not found or is deleted.");
 
                 if (detail.Quantity <= 0)
-                    throw new Exception("Quantity must be greater than zero.");
+                    throw new ArgumentException("Quantity must be greater than zero.");
 
                 var price = product.Price * detail.Quantity;
                 totalAmount += price;
@@ -69,10 +68,15 @@ namespace ECommerceTask.Application.Services
             }
 
             invoice.TotalAmount = totalAmount;
-
             await _invoiceRepository.CreateInvoiceAsync(invoice);
 
-            return invoice;
+            var invoiceSummary = new InvoiceResDTO
+            {
+                Id = invoice.Id,
+                TotalAmount = invoice.TotalAmount
+            };
+
+            return invoiceSummary;
         }
 
 

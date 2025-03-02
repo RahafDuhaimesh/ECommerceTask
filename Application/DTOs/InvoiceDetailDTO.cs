@@ -2,7 +2,8 @@
 {
     public class InvoiceDetailDTO
     {
-        public int ProductId { get; set; } // ID of the product
-        public int Quantity { get; set; } // Quantity of the product
+        public int UserId { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; } 
     }
 }

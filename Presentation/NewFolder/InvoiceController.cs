@@ -17,39 +17,25 @@ namespace ECommerceTask.Presentation.Controllers
     {
         private readonly InvoiceService _invoiceService;
         private readonly IProductRepository _productRepository;
-        private readonly IJwtTokenHelper _jwtTokenHelper; // Use _jwtTokenHelper consistently
+        private readonly IJwtTokenHelper _jwtTokenHelper; 
 
         public InvoiceController(InvoiceService invoiceService, IProductRepository productRepository, IJwtTokenHelper jwtTokenHelper)
         {
             _invoiceService = invoiceService;
             _productRepository = productRepository;
-            _jwtTokenHelper = jwtTokenHelper;  // Make sure this is consistent
+            _jwtTokenHelper = jwtTokenHelper;  
         }
 
         [HttpPost("purchase")]
-        [Authorize]
-        public async Task<IActionResult> CreateInvoice([FromBody] List<InvoiceDetailDTO> invoiceDetailsDTO, [FromHeader] string token)
+        public async Task<IActionResult> CreateInvoice([FromBody] List<InvoiceDetailDTO> invoiceDetailsDTO)
         {
             try
             {
-                // تحقق من أن التوكن موجود في الهيدر
-                if (string.IsNullOrEmpty(token))
-                {
-                    return Unauthorized(new { message = "Token is missing." });
-                }
+                if (invoiceDetailsDTO == null || invoiceDetailsDTO.Count == 0)
+                    return BadRequest(new { message = "Invoice details are required." });
 
-                // فك التوكن واستخراج الـ User ID باستخدام JwtTokenHelper
-                var userId = await _jwtTokenHelper.GetUserIdFromTokenAsync(token);  // استخدم الدالة لاستخراج الـ UserId
+                var invoice = await _invoiceService.AddInvoiceAsync(invoiceDetailsDTO);
 
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized(new { message = "Invalid token or user not found." });
-                }
-
-                // إضافة الفاتورة باستخدام الـ InvoiceService وتمرير التوكن
-                var invoice = await _invoiceService.AddInvoiceAsync(invoiceDetailsDTO, token);  // تمرير التوكن مع البيانات
-
-                // إرجاع الفاتورة المُنشأة
                 return Ok(invoice);
             }
             catch (Exception ex)
@@ -59,8 +45,6 @@ namespace ECommerceTask.Presentation.Controllers
         }
 
 
-
-        // Get Invoice by ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetInvoice(int id)
         {
@@ -71,9 +55,7 @@ namespace ECommerceTask.Presentation.Controllers
             return Ok(invoice);
         }
 
-        // Get Invoices by User ID
         [HttpGet("user/{userId}")]
-        [Authorize]
         public async Task<IActionResult> GetInvoicesByUserId(int userId)
         {
             var invoices = await _invoiceService.GetInvoicesByUserIdAsync(userId);

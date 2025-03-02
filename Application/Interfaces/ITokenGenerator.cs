@@ -2,7 +2,7 @@
 {
     public interface ITokenGenerator
     {
-        string GenerateToken(string username, IList<string> roles);
+        string GenerateToken(int userId, string username, IList<string> roles);
 
     }
 }

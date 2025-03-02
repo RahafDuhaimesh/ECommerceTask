@@ -18,13 +18,11 @@ namespace ECommerceTask.Application.Services
             _jwtTokenHelper = jwtTokenHelper;
         }
 
-        // Admin only can create a new product
         public async Task<Product?> CreateProductAsync(ProductReqDTO productDTO, string token)
         {
-            // Check if the user has an "Admin" role before allowing product creation
             var isValidRole = await _jwtTokenHelper.ValidateTokenAndRole(token, "Admin");
             if (!isValidRole)
-                return null; // User is not authorized to create products
+                return null; 
 
             var product = new Product
             {
@@ -37,7 +35,6 @@ namespace ECommerceTask.Application.Services
             return product;
         }
 
-        // Non-admin users can only list products with pagination
         public async Task<List<Product>> GetProductsAsync(int page, int pageSize)
         {
             return (await _productRepository.GetAllProductsAsync(page, pageSize)).ToList();
@@ -46,20 +43,18 @@ namespace ECommerceTask.Application.Services
         public async Task<Product?> GetProductByIdAsync(int id)
         {
             var product = await _productRepository.GetProductByIdAsync(id);
-            return product?.IsDeleted == true ? null : product; // Check if deleted
+            return product?.IsDeleted == true ? null : product; 
         }
 
-        // Admin can update products
         public async Task<Product?> UpdateProductAsync(int id, ProductReqDTO productDTO, string token)
         {
-            // Check if the user has an "Admin" role before allowing product update
             var isValidRole = await _jwtTokenHelper.ValidateTokenAndRole(token, "Admin");
             if (!isValidRole)
-                return null; // User is not authorized to update products
+                return null; 
 
             var product = await _productRepository.GetProductByIdAsync(id);
             if (product == null || product.IsDeleted)
-                return null; // Product is not found or already deleted
+                return null; 
 
             product.ArabicName = productDTO.ArabicName;
             product.EnglishName = productDTO.EnglishName;
@@ -69,17 +64,15 @@ namespace ECommerceTask.Application.Services
             return product;
         }
 
-        // Admin can delete products (soft delete)
         public async Task<bool> DeleteProductAsync(int id, string token)
         {
-            // Check if the user has an "Admin" role before allowing product deletion
             var isValidRole = await _jwtTokenHelper.ValidateTokenAndRole(token, "Admin");
             if (!isValidRole)
-                return false; // User is not authorized to delete products
+                return false; 
 
             var product = await _productRepository.GetProductByIdAsync(id);
             if (product == null || product.IsDeleted)
-                return false; // Product not found or already deleted
+                return false;
 
             await _productRepository.DeleteProductAsync(id);
             return true;
